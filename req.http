@@ -41,7 +41,7 @@ Authorization: Bearer test
   "format": "pretty"
 }
 
-### Query Segment file count
+### Query Segment
 POST http://localhost:8090/query
 Content-Type: application/json
 Authorization: Bearer test
@@ -51,22 +51,42 @@ Authorization: Bearer test
   "format": "pretty"
 }
 
-### Query Segment file count
+### Query Segment
 POST http://localhost:8090/query
 Content-Type: application/json
 Authorization: Bearer test
 
 {
-  "query": "select get_f(tabl:='segment', start_year:=1, end_year:=8000)",
+  "query": "select get_files(tabl:='segment', start_year:=1, end_year:=8000)",
   "format": "pretty"
 }
 
-### Query Segment file count
+### Query Segment
 POST http://localhost:8090/query
 Content-Type: application/json
 Authorization: Bearer test
 
 {
   "query": "select count(distinct _row_id), _row_id from icedb(tabl:='segment', start_year:=1, end_year:=8000) group by _row_id",
+  "format": "pretty"
+}
+
+### Query Segment
+POST http://localhost:8090/query
+Content-Type: application/json
+Authorization: Bearer test
+
+{
+  "query": "select * from icedb(tabl:='segment', start_year:=1, end_year:=8000)",
+  "format": "pretty"
+}
+
+### Query Segment
+POST http://localhost:8090/query
+Content-Type: application/json
+Authorization: Bearer test
+
+{
+  "query": "select any_value(user_id) as user_id, any_value(event) as event, any_value(properties) as properties, any_value(og_payload) as og_payload, any_value(ts) as ts, _row_id from icedb(tabl:='segment', start_year:=1, end_year:=8000) group by _row_id",
   "format": "pretty"
 }
