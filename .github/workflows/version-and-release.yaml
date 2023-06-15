@@ -49,5 +49,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/icedb-segment/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/icedb-segment/${{ env.IMAGE_NAME }}:${{ steps.previoustag.outputs.tag }}
+          tags: ${{ env.REGISTRY }}/IceDBSegment/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/IceDBSegment/${{ env.IMAGE_NAME }}:${{ steps.previoustag.outputs.tag }}
           platforms: linux/amd64
