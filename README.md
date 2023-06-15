@@ -26,11 +26,11 @@ Set the env vars to be your PG/CRDB DSN, and your S3 info. Set the `AUTH` env va
 
 The top level keys that are held are:
 ```
-"ts"
-"event"
-"user_id"
-"properties"
-"og_payload"
+"ts" int
+"event" string
+"user_id" string
+"properties" string
+"og_payload" string
 ```
 
 `og_payload` is the full JSON body (contains dynamic page info, integration info, etc.). `properties` is the `properties` property of the JSON body, which exists if the event is type `track`.
