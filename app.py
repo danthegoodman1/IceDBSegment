@@ -20,7 +20,7 @@ def get_partition_range(table: str, syear: int, smonth: int, sday: int, eyear: i
 def part_segment(row: dict) -> str:
     rowtime = datetime.fromisoformat(row['timestamp'])
     # the `table=segment/` prefix makes it effectively the `segment` table
-    part = 'table={}/y={}/m={}/d={}'.format(os.environ["TABLE_NAME"], '{}'.format(rowtime.year).zfill(4), '{}'.format(rowtime.month).zfill(2), '{}'.format(rowtime.day).zfill(2))
+    part = 'table={}/y={}/m={}/d={}'.format(row["table"], '{}'.format(rowtime.year).zfill(4), '{}'.format(rowtime.month).zfill(2), '{}'.format(rowtime.day).zfill(2))
     return part
 
 def format_segment(row: dict) -> dict:
@@ -159,29 +159,35 @@ def query():
     except Exception as e:
         raise e
 
-# Post a segment event directly
-@app.route('/segment/insert', methods=['POST'])
-def insert_segment():
+# Post an event directly
+@app.route('/<table>/insert', methods=['POST'])
+def insert_segment(table):
     if not auth_header():
         return 'invalid auth', 401
     content_type = request.headers.get('Content-Type')
     if (content_type == 'application/json'):
         j = request.get_json()
         if isinstance(j, dict):
+            j["table"] = table # add the table in
             inserted = ice.insert([j])
             return inserted
         if isinstance(j, list):
+            # add the table in
+            temp = []
+            for row in j:
+                row["table"] = table
+                temp.append(table)
             inserted = ice.insert(j)
             return inserted
         return 'bad JSON!'
     else:
         return 'Content-Type not supported!'
 
-@app.route('/segment/merge', methods=['POST'])
-def merge_files():
+@app.route('/<table>/merge', methods=['POST'])
+def merge_files(table):
     if not auth_header():
         return 'invalid auth', 401
-    res = ice.merge_files(10_000_000, partition_prefix=f"table={os.environ['TABLE_NAME']}/", custom_merge_query="""
+    res = ice.merge_files(10_000_000, partition_prefix=f"table={table}/", custom_merge_query="""
     select
         any_value(user_id) as user_id,
         any_value(event) as event,
