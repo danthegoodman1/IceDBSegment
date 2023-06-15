@@ -1,0 +1,21 @@
+version: '3'
+
+dotenv: ['.env']
+
+env:
+  DOCKER_BUILDKIT: "1"
+  PROJECT_NAME: tangia-prod
+  IMG_NAME: icedb-api
+  REGION: us-east1
+  SERVICE_NAME: icedb-api
+
+tasks:
+
+  docker:
+    cmds:
+      - docker build . -t $REGION-docker.pkg.dev/$PROJECT_NAME/$IMG_NAME/$IMG_NAME:latest --ssh default
+      - gcloud auth configure-docker $REGION-docker.pkg.dev
+      - docker push $REGION-docker.pkg.dev/$PROJECT_NAME/$IMG_NAME/$IMG_NAME:latest
+  deploy:
+    cmds:
+      - gcloud run deploy $SERVICE_NAME --project=$PROJECT --image $REGION-docker.pkg.dev/$PROJECT_NAME/$IMG_NAME/$IMG_NAME:latest --region $REGION --platform managed --allow-unauthenticated
