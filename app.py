@@ -181,7 +181,17 @@ def insert_segment():
 def merge_files():
     if not auth_header():
         return 'invalid auth', 401
-    res = ice.merge_files(10_000_000, partition_prefix=f"table={os.environ['TABLE_NAME']}/")
+    res = ice.merge_files(10_000_000, partition_prefix=f"table={os.environ['TABLE_NAME']}/", custom_merge_query="""
+    select
+        any_value(user_id) as user_id,
+        any_value(event) as event,
+        any_value(properties) as properties,
+        any_value(og_payload) as og_payload,
+        any_value(ts) as ts,
+        _row_id
+    from source_files
+    group by _row_id
+    """)
     return str(res)
 
 

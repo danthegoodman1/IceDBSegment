@@ -1,5 +1,8 @@
 # IceDBWorker
-IceDB Insert and Merge worker
+
+IceDB Insert and Merge worker for segment to write directly to it.
+
+Uses a custom merge query for deduplication on the `messageId` field.
 
 ## Developing
 
