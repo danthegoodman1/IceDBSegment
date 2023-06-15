@@ -1,6 +1,6 @@
 # IceDBWorker
 
-IceDB Insert and Merge worker for segment to write directly to it.
+IceDB Insert and Merge worker for segment to write directly to it. Supports multiple tables via the URL path (see [req.http](req.http)).
 
 Uses a custom merge query for deduplication on the `messageId` field.
 
