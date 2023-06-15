@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: icedb-segment
+  IMAGE_NAME: icedbsegment
 
 jobs:
   build-and-push:
@@ -49,5 +49,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/icedbsegment/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/icedbsegment/${{ env.IMAGE_NAME }}:${{ steps.previoustag.outputs.tag }}
+          tags: ${{ env.REGISTRY }}/danthegoodman1/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/danthegoodman1/${{ env.IMAGE_NAME }}:${{ steps.previoustag.outputs.tag }}
           platforms: linux/amd64
