@@ -4,6 +4,8 @@ IceDB Insert and Merge worker for segment to write directly to it. Supports mult
 
 Uses a custom merge query for deduplication on the `messageId` field.
 
+Used in production at [Tangia](https://www.tangia.co)
+
 ## Developing
 
 Run this in the dev container (or a ubuntu install with python 3.11 and docker), then
