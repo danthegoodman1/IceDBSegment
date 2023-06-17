@@ -9,9 +9,11 @@ import os
 import duckdb
 import duckdb.typing as ty
 from time import time
+from threading import Timer, Semaphore
 import tabulate # for markdown printing, and pipreqs to require it
 
 app = Flask(__name__)
+timer_seconds = 3
 
 def get_partition_range(table: str, syear: int, smonth: int, sday: int, eyear: int, emonth: int, eday: int) -> list[str]:
     return ['table={}/y={}/m={}/d={}'.format(table, '{}'.format(syear).zfill(4), '{}'.format(smonth).zfill(2), '{}'.format(sday).zfill(2)),
@@ -159,6 +161,44 @@ def query():
     except Exception as e:
         raise e
 
+class InsertBuffer():
+    map: dict[str, list[str]] = {}
+    lock: bool = False
+    t: Timer
+    sem: Semaphore
+
+    def __init__(self):
+        self.t = Timer(timer_seconds, self.insertBatch)
+        self.t.start()
+        self.sem = Semaphore(1)
+
+    def insertRow(self, table: str, row: dict):
+        try:
+            self.sem.acquire()
+            if table not in self.map:
+                self.map[table] = []
+            self.map[table].append(row)
+        finally:
+            self.sem.release()
+    
+    def insertBatch(self):
+        print('buffering insert!')
+        try:
+            self.sem.acquire()
+            for table in self.map:
+                ice.insert(self.map[table])
+        finally:
+            self.map = {}
+            self.t.cancel()
+            self.t = Timer(timer_seconds, self.insertBatch)
+            self.t.start()
+            self.sem.release()
+    
+    def stop(self):
+        self.t.cancel()
+
+buf = InsertBuffer()
+
 # Post an event directly
 @app.route('/<table>/insert', methods=['POST'])
 def insert_segment(table):
@@ -169,24 +209,51 @@ def insert_segment(table):
         j = request.get_json()
         if isinstance(j, dict):
             j["table"] = table # add the table in
-            inserted = ice.insert([j])
-            return inserted
+            buf.insertRow(table, j)
+            # inserted = ice.insert([j])
+            # return inserted
+            return "buffered"
         if isinstance(j, list):
             # add the table in
-            temp = []
             for row in j:
                 row["table"] = table
-                temp.append(table)
-            inserted = ice.insert(j)
-            return inserted
+                buf.insertRow(row)
+            # inserted = ice.insert(j)
+            # return inserted
+            return "buffered"
         return 'bad JSON!'
     else:
         return 'Content-Type not supported!'
 
-@app.route('/<table>/merge', methods=['POST'])
-def merge_files(table):
-    if not auth_header():
-        return 'invalid auth', 401
+class MergeTimer():
+    t: Timer
+    sem: Semaphore
+    tables = ['segment', 'twitch-ext']
+
+    def __init__(self):
+        self.t = Timer(timer_seconds, self.merge)
+        self.t.start()
+        self.sem = Semaphore(1)
+    
+    def merge(self):
+        print('merging')
+        try:
+            self.sem.acquire()
+            for table in self.tables:
+                merge(table)
+        finally:
+            self.map = {}
+            self.t.cancel()
+            self.t = Timer(timer_seconds, self.merge)
+            self.t.start()
+            self.sem.release()
+    
+    def stop(self):
+        self.t.cancel()
+
+mrg = MergeTimer()
+
+def merge(table: str):
     res = ice.merge_files(10_000_000, maxFileCount=100, partition_prefix=f"table={table}/", custom_merge_query="""
     select
         any_value(user_id) as user_id,
@@ -198,8 +265,23 @@ def merge_files(table):
     from source_files
     group by _row_id
     """)
-    return str(res)
+    print('merged', res)
+    return res
 
+@app.route('/<table>/merge', methods=['POST'])
+def merge_files(table):
+    if not auth_header():
+        return 'invalid auth', 401
+    return str(merge(table))
+
+def shutdown():
+    print('shutting down!')
+    buf.stop()
+    buf.insertBatch()
+    buf.stop()
+    mrg.stop()
+    ice.close()
 
 if __name__ == '__main__':
     app.run(debug=True if "DEBUG" in os.environ and os.environ['DEBUG'] == '1' else False, port=int(os.environ['PORT']) if "PORT" in os.environ else 8090, host='0.0.0.0')
+    shutdown()
