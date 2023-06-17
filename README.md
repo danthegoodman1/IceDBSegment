@@ -2,6 +2,8 @@
 
 IceDB Insert and Merge worker for segment to write directly to it. Supports multiple tables via the URL path (see [req.http](req.http)).
 
+Combine with [danthegoodman1/SegmentProxy](https://github.com/danthegoodman1/SegmentProxy) for a drop-in replacement for the segment JS packages (with a one-line config change).
+
 Uses a custom merge query for deduplication on the `messageId` field.
 
 Used in production at [Tangia](https://www.tangia.co)
