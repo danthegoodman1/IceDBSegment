@@ -264,6 +264,7 @@ def merge(table: str):
         any_value(event) as event,
         any_value(properties) as properties,
         any_value(og_payload) as og_payload,
+        any_value(anonymous) as anonymous,
         any_value(ts) as ts,
         _row_id
     from source_files
