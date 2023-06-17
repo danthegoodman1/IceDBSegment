@@ -126,6 +126,26 @@ Authorization: Bearer test
 }
 
 ### Query Segment
+POST https://icedb.cf.tangia.co/query
+Content-Type: application/json
+Authorization: Bearer fuiyewbiuygfhweriuhg
+
+{
+  "query": "select count(distinct filename) from icedb(tabl:='twitch-ext', start_year:=1, end_year:=8000)",
+  "format": "pretty"
+}
+
+### Query Segment
+POST https://icedb.cf.tangia.co/query
+Content-Type: application/json
+Authorization: Bearer fuiyewbiuygfhweriuhg
+
+{
+  "query": "select filename, count(distinct _row_id) from icedb(tabl:='twitch-ext', start_year:=1, end_year:=8000) group by filename",
+  "format": "pretty"
+}
+
+### Query Segment
 POST http://localhost:8090/query
 Content-Type: application/json
 Authorization: Bearer test
