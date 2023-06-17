@@ -257,17 +257,17 @@ mrg = MergeTimer()
 
 def merge(table: str):
     res = ice.merge_files(10_000_000, maxFileCount=100, partition_prefix=f"table={table}/",
-                        #   custom_merge_query="""
-                        #     select
-                        #         any_value(user_id) as user_id,
-                        #         any_value(event) as event,
-                        #         any_value(properties) as properties,
-                        #         any_value(og_payload) as og_payload,
-                        #         any_value(ts) as ts,
-                        #         _row_id
-                        #     from source_files
-                        #     group by _row_id
-                        #     """
+                          custom_merge_query="""
+                            select
+                                any_value(user_id) as user_id,
+                                any_value(event) as event,
+                                any_value(properties) as properties,
+                                any_value(og_payload) as og_payload,
+                                any_value(ts) as ts,
+                                _row_id
+                            from source_files
+                            group by _row_id
+                            """
     )
     return res
 
