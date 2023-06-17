@@ -1,5 +1,5 @@
 duckdb==0.8.0
 Flask==2.3.2
-icedb==0.0.53
+icedb==0.0.54
 python-dotenv==1.0.0
 tabulate==0.9.0
