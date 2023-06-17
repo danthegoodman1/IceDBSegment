@@ -218,7 +218,7 @@ def insert_segment(table):
             # add the table in
             for row in j:
                 row["table"] = table
-                buf.insertRow(row)
+                buf.insertRow(table, row)
             # inserted = ice.insert(j)
             # return inserted
             return "buffered"

@@ -17,6 +17,40 @@ Authorization: Bearer test
 	"name": "Home Page"
 }
 
+### Insert Segment Rows
+POST http://localhost:8090/segment/insert
+Content-Type: application/json
+Authorization: Bearer test
+
+[
+  {
+    "messageId": "segment-test-message-qea97",
+    "timestamp": "2023-06-12T19:21:52.976Z",
+    "type": "page",
+    "email": "test@example.org",
+    "properties": {
+      "property1": 1,
+      "property2": "test",
+      "property3": true
+    },
+    "userId": "test-user-gk2i3",
+    "name": "Home Page"
+  },
+  {
+    "messageId": "segment-test-message-fewfw",
+    "timestamp": "2023-06-12T19:21:53.001Z",
+    "type": "page",
+    "email": "test@example.org",
+    "properties": {
+      "property1": 1,
+      "property2": "test",
+      "property3": true
+    },
+    "userId": "test-user-gk2i3",
+    "name": "Home Page"
+  }
+]
+
 ### Merge segment
 POST http://localhost:8090/segment/merge
 Authorization: Bearer test
