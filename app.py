@@ -13,7 +13,8 @@ from threading import Timer, Semaphore
 import tabulate # for markdown printing, and pipreqs to require it
 
 app = Flask(__name__)
-timer_seconds = 3
+insert_interval_seconds = 3
+merge_interval_seconds = 6
 
 def get_partition_range(table: str, syear: int, smonth: int, sday: int, eyear: int, emonth: int, eday: int) -> list[str]:
     return ['table={}/y={}/m={}/d={}'.format(table, '{}'.format(syear).zfill(4), '{}'.format(smonth).zfill(2), '{}'.format(sday).zfill(2)),
@@ -168,7 +169,7 @@ class InsertBuffer():
     sem: Semaphore
 
     def __init__(self):
-        self.t = Timer(timer_seconds, self.insertBatch)
+        self.t = Timer(insert_interval_seconds, self.insertBatch)
         self.t.start()
         self.sem = Semaphore(1)
 
@@ -182,15 +183,15 @@ class InsertBuffer():
             self.sem.release()
     
     def insertBatch(self):
-        print('buffering insert!')
         try:
             self.sem.acquire()
             for table in self.map:
                 ice.insert(self.map[table])
+                print('buffer inserted', len(self.map[table]), 'for', table)
         finally:
             self.map = {}
             self.t.cancel()
-            self.t = Timer(timer_seconds, self.insertBatch)
+            self.t = Timer(insert_interval_seconds, self.insertBatch)
             self.t.start()
             self.sem.release()
     
@@ -231,20 +232,21 @@ class MergeTimer():
     tables = ['segment', 'twitch-ext']
 
     def __init__(self):
-        self.t = Timer(timer_seconds, self.merge)
+        self.t = Timer(merge_interval_seconds, self.merge)
         self.t.start()
         self.sem = Semaphore(1)
     
     def merge(self):
-        print('merging')
         try:
             self.sem.acquire()
             for table in self.tables:
-                merge(table)
+                res = merge(table)
+                if res > 0:
+                    print('merged', res, 'for', table)
         finally:
             self.map = {}
             self.t.cancel()
-            self.t = Timer(timer_seconds, self.merge)
+            self.t = Timer(insert_interval_seconds, self.merge)
             self.t.start()
             self.sem.release()
     
@@ -265,7 +267,6 @@ def merge(table: str):
     from source_files
     group by _row_id
     """)
-    print('merged', res)
     return res
 
 @app.route('/<table>/merge', methods=['POST'])
