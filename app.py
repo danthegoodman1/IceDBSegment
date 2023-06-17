@@ -241,6 +241,7 @@ class MergeTimer():
         try:
             self.sem.acquire()
             for table in self.tables:
+                print('merging for', table)
                 res = merge(table)
                 if res > 0:
                     print('merged', res, 'for', table)
