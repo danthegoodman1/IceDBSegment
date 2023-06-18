@@ -21,14 +21,14 @@ def get_partition_range(table: str, syear: int, smonth: int, sday: int, eyear: i
             'table={}/y={}/m={}/d={}'.format(table, '{}'.format(eyear).zfill(4), '{}'.format(emonth).zfill(2), '{}'.format(eday).zfill(2))]
 
 def part_segment(row: dict) -> str:
-    rowtime = datetime.fromisoformat(row['receviedAt'])
+    rowtime = row['receviedAt'] if 'receivedAt' in row else datetime.now().isoformat()
     # the `table=segment/` prefix makes it effectively the `segment` table
     part = 'table={}/y={}/m={}/d={}'.format(row["table"], '{}'.format(rowtime.year).zfill(4), '{}'.format(rowtime.month).zfill(2), '{}'.format(rowtime.day).zfill(2))
     return part
 
 def format_segment(row: dict) -> dict:
     final_row = {
-        "ts": datetime.fromisoformat(row['receviedAt']).timestamp()*1000, # convert to ms
+        "ts": row['receviedAt'] if 'receivedAt' in row else datetime.now().isoformat(),
         "event": "", # replaced below
         "user_id": row['userId'] if 'userId' in row else row['anonymousId'],
         "anonymous": False if 'userId' in row else True,
