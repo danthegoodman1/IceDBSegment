@@ -15,6 +15,7 @@ import tabulate # for markdown printing, and pipreqs to require it
 app = Flask(__name__)
 insert_interval_seconds = int(os.environ["INSERT_SEC"]) if "INSERT_SEC" in os.environ and os.environ["INSERT_SEC"].isdigit() else 3
 merge_interval_seconds = int(os.environ["MERGE_SEC"]) if "MERGE_SEC" in os.environ and os.environ["MERGE_SEC"].isdigit() else 6
+row_group_size = int(os.environ["ROW_GROUP_SIZE"]) if "ROW_GROUP_SIZE" in os.environ and os.environ["ROW_GROUP_SIZE"].isdigit() else 10_000
 
 def get_partition_range(table: str, syear: int, smonth: int, sday: int, eyear: int, emonth: int, eday: int) -> list[str]:
     return ['table={}/y={}/m={}/d={}'.format(table, '{}'.format(syear).zfill(4), '{}'.format(smonth).zfill(2), '{}'.format(sday).zfill(2)),
@@ -57,7 +58,8 @@ ice = IceDB(
     create_table=os.environ["CREATE_TABLE"] == "1" if "CREATE_TABLE" in os.environ else False,
     formatRow=format_segment,
     duckdb_ext_dir='/app/duckdb_exts',
-    unique_row_key='messageId'
+    unique_row_key='messageId',
+    row_group_size=row_group_size
 )
 
 # Caching because of duckdb double-triggering with read_parquet. A normal var was causing Unbound access errors
