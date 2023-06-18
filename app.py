@@ -197,10 +197,12 @@ def insert_segment(table):
             buf.insertRow(table, j)
             # inserted = ice.insert([j])
             # return inserted
+            print(j["anonymousId"])
             return "buffered"
         if isinstance(j, list):
             # add the table in
             for row in j:
+                print(j["anonymousId"])
                 row["table"] = table
                 buf.insertRow(table, row)
             # inserted = ice.insert(j)
