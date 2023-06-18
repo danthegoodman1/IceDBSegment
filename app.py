@@ -29,7 +29,7 @@ def part_segment(row: dict) -> str:
 
 def format_segment(row: dict) -> dict:
     final_row = {
-        "ts": datetime.fromisoformat(row['receivedAt']).timestamp()*1000 if 'receivedAt' in row else datetime.utcnow().timestamp()*1000, # convert to ms
+        "ts": int(datetime.fromisoformat(row['receivedAt']).timestamp()*1000 if 'receivedAt' in row else datetime.utcnow().timestamp()*1000), # convert to ms
         "event": "", # replaced below
         "user_id": row['userId'] if 'userId' in row else row['anonymousId'],
         "anonymous": False if 'userId' in row else True,
