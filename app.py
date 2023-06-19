@@ -38,11 +38,11 @@ def format_segment(row: dict) -> dict:
     }
 
     if row['type'] == 'page':
-        final_row['event'] = "page.{}".format(row["name"])
+        final_row['event'] = "page." + row["name"]
     elif row["type"] == "identify":
         final_row['event'] = "identify"
     elif row["type"] == "track":
-        final_row["event"] = row["event"]
+        final_row["event"] = "track." + row["event"]
 
     return final_row
 
