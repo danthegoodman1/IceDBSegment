@@ -15,6 +15,7 @@ import tabulate # for markdown printing, and pipreqs to require it
 app = Flask(__name__)
 insert_interval_seconds = int(os.environ["INSERT_SEC"]) if "INSERT_SEC" in os.environ and os.environ["INSERT_SEC"].isdigit() else 3
 merge_interval_seconds = int(os.environ["MERGE_SEC"]) if "MERGE_SEC" in os.environ and os.environ["MERGE_SEC"].isdigit() else 6
+delete_interval_seconds = int(os.environ["DELETE_SEC"]) if "DELETE_SEC" in os.environ and os.environ["DELETE_SEC"].isdigit() else 120
 row_group_size = int(os.environ["ROW_GROUP_SIZE"]) if "ROW_GROUP_SIZE" in os.environ and os.environ["ROW_GROUP_SIZE"].isdigit() else 10_000
 
 def get_partition_range(table: str, syear: int, smonth: int, sday: int, eyear: int, emonth: int, eday: int) -> list[str]:
@@ -232,7 +233,7 @@ class MergeTimer():
         finally:
             self.map = {}
             self.t.cancel()
-            self.t = Timer(insert_interval_seconds, self.merge)
+            self.t = Timer(merge_interval_seconds, self.merge)
             self.t.start()
             self.sem.release()
     
@@ -264,12 +265,42 @@ def merge_files(table):
         return 'invalid auth', 401
     return str(merge(table))
 
+class DeleteInactiveWorker():
+    t: Timer
+    sem: Semaphore
+    tables = ['segment', 'twitch-ext']
+
+    def __init__(self):
+        self.t = Timer(delete_interval_seconds, self.delete)
+        self.t.start()
+        self.sem = Semaphore(1)
+    
+    def delete(self):
+        try:
+            self.sem.acquire()
+            for table in self.tables:
+                res = ice.remove_inactive_parts(1000 * 60 * 60 * 2, partition_prefix=f"table={table}", limit=50)
+                if len(res) > 0:
+                    print('deleted', len(res), 'inactive files in', table)
+        finally:
+            self.map = {}
+            self.t.cancel()
+            self.t = Timer(delete_interval_seconds, self.delete)
+            self.t.start()
+            self.sem.release()
+    
+    def stop(self):
+        self.t.cancel()
+
+dworker = DeleteInactiveWorker()
+
 def shutdown():
     print('shutting down!')
     buf.stop()
     buf.insertBatch()
     buf.stop()
     mrg.stop()
+    dworker.stop()
     ice.close()
 
 if __name__ == '__main__':
