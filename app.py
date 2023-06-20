@@ -279,8 +279,8 @@ class DeleteInactiveWorker():
         try:
             self.sem.acquire()
             for table in self.tables:
-                # inactive files that are more than 2 hours old
-                res = ice.remove_inactive_parts(1000 * 60 * 60 * 2, partition_prefix=f"table={table}", limit=50)
+                # inactive files that are more than 1 hour old
+                res = ice.remove_inactive_parts(1000 * 60 * 60, partition_prefix=f"table={table}", limit=50)
                 if len(res) > 0:
                     print('deleted', len(res), 'inactive files in', table)
         finally:
