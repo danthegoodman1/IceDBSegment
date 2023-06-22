@@ -216,7 +216,7 @@ def insert_segment(table):
 class MergeTimer():
     t: Timer
     sem: Semaphore
-    tables = ['segment', 'twitch-ext']
+    tables = ['segment', 'twitch-ext', 'htmx-ext']
 
     def __init__(self):
         self.t = Timer(merge_interval_seconds, self.merge)
@@ -268,7 +268,7 @@ def merge_files(table):
 class DeleteInactiveWorker():
     t: Timer
     sem: Semaphore
-    tables = ['segment', 'twitch-ext']
+    tables = ['segment', 'twitch-ext', 'htmx-ext']
 
     def __init__(self):
         self.t = Timer(delete_interval_seconds, self.delete)
